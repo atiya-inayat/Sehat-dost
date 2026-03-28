@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+
+# Environment variables (CRITICAL for security)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# User Uploads (Don't sync prescription/lab images to GitHub)
+uploads/
+
+# Build and Logs
+dist/
+logs/
+*.log
+npm-debug.log*
+
+# Editor/System files
+.vscode/
+.idea/
+.DS_Store
+*.swp
