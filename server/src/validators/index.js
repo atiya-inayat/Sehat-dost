@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
 export const phoneRegex = /^03[0-9]{9}$/;
+export const phoneRegexLoose = /^03[0-9]{9}$|^03[0-9]{2}[-\s]?[0-9]{7}$/;
 export const cnicRegex = /^[0-9]{13}$/;
 export const pmcIdRegex = /^PMC-[0-9]{5}$/;
 export const landlineRegex = /^0[0-9]{2,3}-[0-9]{7}$/;
@@ -117,7 +118,7 @@ export const medicalQuestionSchema = Joi.object({
 export const bloodRequestSchema = Joi.object({
   type: Joi.string().valid('Request', 'Donor').required(),
   bloodGroup: Joi.string().valid('A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-').required(),
-  units: Joi.number().integer().min(1).max(10),
+  units: Joi.number().integer().min(1).max(10).default(1),
   patientName: Joi.string().when('type', {
     is: 'Request',
     then: Joi.required()
@@ -126,14 +127,14 @@ export const bloodRequestSchema = Joi.object({
     is: 'Request',
     then: Joi.required()
   }),
-  hospitalAddress: Joi.string(),
-  contactPhone: Joi.string().pattern(phoneRegex).required()
-    .messages({ 'string.pattern.base': 'Phone must be in format: 03xxxxxxxxx' }),
-  urgency: Joi.string().valid('Critical', 'Immediate', 'Normal'),
-  city: Joi.string().required(),
-  province: Joi.string().required(),
-  area: Joi.string(),
-  donorNotes: Joi.string().max(500),
+  hospitalAddress: Joi.string().allow(''),
+  contactPhone: Joi.string().min(11).max(15).required()
+    .messages({ 'string.min': 'Phone must be at least 11 digits' }),
+  urgency: Joi.string().valid('Critical', 'Immediate', 'Normal').default('Normal'),
+  city: Joi.string().default('Lahore'),
+  province: Joi.string().default('Punjab'),
+  area: Joi.string().allow(''),
+  donorNotes: Joi.string().max(500).allow(''),
   medicalConditions: Joi.array().items(Joi.string()),
   medications: Joi.array().items(Joi.string())
 });

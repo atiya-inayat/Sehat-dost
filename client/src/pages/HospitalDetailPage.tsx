@@ -1,21 +1,109 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DoctorCard from "@/components/DoctorCard";
-import { hospitals, doctors, specialties } from "@/data/mockData";
-import { Building2, Phone, MapPin, Search, X, Stethoscope } from "lucide-react";
+import { hospitalsAPI } from "@/lib/api";
+import { specialties as specialtyList } from "@/data/mockData";
+import { Building2, Phone, MapPin, Search, X, Stethoscope, ArrowLeft, Loader2 } from "lucide-react";
+
+interface Hospital {
+  _id: string;
+  name: string;
+  address: { street?: string; area?: string; city: string; province: string };
+  helpline: string;
+  emergency?: string;
+  about: string;
+  services: string[];
+  facilities: string[];
+  rating: number;
+  type: string;
+  doctors: string[];
+}
 
 const HospitalDetailPage = () => {
   const { id } = useParams();
-  const hospital = hospitals.find((h) => h.id === id);
+  const navigate = useNavigate();
+  const [hospital, setHospital] = useState<Hospital | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [specialtySearch, setSpecialtySearch] = useState("");
-  const hospitalDoctors = doctors.filter((d) => hospital?.doctors.includes(d.id));
 
-  if (!hospital) return <div className="min-h-screen flex items-center justify-center">Hospital not found</div>;
+  useEffect(() => {
+    if (id) {
+      fetchHospital(id);
+    }
+  }, [id]);
 
-  const filteredSpecialties = specialties.filter((s) =>
+  const fetchHospital = async (hospitalId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await hospitalsAPI.getById(hospitalId);
+
+      if (response.data.success) {
+        setHospital(response.data.data);
+      } else {
+        setError("Hospital not found");
+      }
+    } catch {
+      setError("Failed to load hospital details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading hospital...</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !hospital) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="text-center py-16">
+            <Building2 className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">Hospital Not Found</h2>
+            <p className="text-muted-foreground mb-6">{error || "The hospital you're looking for doesn't exist"}</p>
+            <Link
+              to="/hospitals"
+              className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+            >
+              Browse Hospitals
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const filteredSpecialties = specialtyList.filter((s) =>
     s.toLowerCase().includes(specialtySearch.toLowerCase())
   );
 
@@ -23,6 +111,13 @@ const HospitalDetailPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to listing
+        </button>
+
         {/* Hospital Card */}
         <div className="bg-card rounded-2xl border border-border p-6 md:p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-6">
@@ -31,7 +126,7 @@ const HospitalDetailPage = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-2xl font-heading font-bold text-foreground">{hospital.name}</h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1"><MapPin className="w-4 h-4" /> {hospital.address}</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1"><MapPin className="w-4 h-4" /> {hospital.address.area ? `${hospital.address.area}, ` : ""}{hospital.address.city}, {hospital.address.province}</p>
               <p className="mt-3 text-sm text-muted-foreground">{hospital.about}</p>
             </div>
             <div className="flex flex-col gap-2 shrink-0">
@@ -106,7 +201,23 @@ const HospitalDetailPage = () => {
         {/* Doctors */}
         <h2 className="text-xl font-heading font-bold text-foreground mb-4">Most Experienced Doctors</h2>
         <div className="flex flex-col gap-4 mb-8">
-          {hospitalDoctors.map((d) => <DoctorCard key={d.id} {...d} />)}
+          {hospital.doctors && hospital.doctors.length > 0 ? (
+            hospital.doctors.map((doctor: any) => (
+              <DoctorCard 
+                key={doctor._id} 
+                id={doctor._id}
+                name={doctor.user?.name || "Doctor"}
+                specialty={doctor.specialty}
+                degrees={doctor.degrees}
+                experience={doctor.experience}
+                fee={doctor.fee}
+                pmdc={doctor.pmcId}
+                online={doctor.isOnline}
+              />
+            ))
+          ) : (
+            <p className="text-muted-foreground">No doctors information available</p>
+          )}
         </div>
 
         {/* Services & Facilities */}

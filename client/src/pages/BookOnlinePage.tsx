@@ -1,7 +1,24 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { doctors } from "@/data/mockData";
-import { User, Shield, GraduationCap, ArrowLeft, Calendar, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { doctorsAPI } from "@/lib/api";
+import { mockDoctors } from "@/data/mockFallback";
+import { User, Shield, GraduationCap, ArrowLeft, Calendar, Clock, Loader2 } from "lucide-react";
+
+interface Doctor {
+  _id: string;
+  user: { _id: string; name: string; avatar?: string };
+  specialty: string;
+  degrees: string;
+  experience: number;
+  fee: number;
+  pmcId: string;
+  gender: string;
+  isOnline: boolean;
+  hospital: string;
+  hospitalAddress: string;
+  availability: Record<string, string>;
+  about: string;
+}
 
 const dates = Array.from({ length: 7 }, (_, i) => {
   const d = new Date();
@@ -14,11 +31,81 @@ const timeSlots = ["10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM", "
 const BookOnlinePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const doctor = doctors.find((d) => d.id === id);
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<number>(0);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  if (!doctor) return <div className="min-h-screen flex items-center justify-center">Doctor not found</div>;
+  useEffect(() => {
+    if (id) {
+      fetchDoctor(id);
+    }
+  }, [id]);
+
+  const fetchDoctor = async (doctorId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Check if ID is a valid MongoDB ObjectId (24 hex chars)
+      const isValidObjectId = /^[a-fA-F0-9]{24}$/.test(doctorId);
+
+      if (isValidObjectId) {
+        // Try API first for valid ObjectIds
+        const response = await doctorsAPI.getById(doctorId);
+
+        if (response.data.success) {
+          setDoctor(response.data.data);
+          return;
+        }
+      }
+
+      // Fallback to mock data for invalid IDs or API failures
+      const mockDoc = mockDoctors.find(d => d._id === doctorId);
+      if (mockDoc) {
+        setDoctor(mockDoc);
+      } else {
+        setError("Doctor not found");
+      }
+    } catch {
+      // Fallback to mock data on any error
+      const mockDoc = mockDoctors.find(d => d._id === doctorId);
+      if (mockDoc) {
+        setDoctor(mockDoc);
+      } else {
+        setError("Doctor not found");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !doctor) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">Doctor Not Found</h2>
+          <p className="text-muted-foreground mb-6">{error || "The doctor you're looking for doesn't exist"}</p>
+          <Link
+            to="/doctors"
+            className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+          >
+            Find Doctors
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleNext = () => {
     if (selectedTime) {
@@ -40,12 +127,13 @@ const BookOnlinePage = () => {
               <User className="w-8 h-8 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="font-heading font-bold text-lg text-foreground">{doctor.name}</h2>
+              <h2 className="font-heading font-bold text-lg text-foreground">{doctor.user?.name || "Doctor"}</h2>
               <div className="flex items-center gap-1.5 text-xs text-success mt-0.5">
-                <Shield className="w-3 h-3" /> PMC Verified
+                <Shield className="w-3 h-3" /> PMC Verified — {doctor.pmcId}
               </div>
               <p className="text-sm text-primary mt-1">{doctor.specialty}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{doctor.degrees}</p>
+              <p className="text-sm font-medium text-foreground mt-2">Fee: Rs. {doctor.fee}</p>
             </div>
           </div>
         </div>

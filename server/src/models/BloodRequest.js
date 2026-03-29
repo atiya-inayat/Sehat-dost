@@ -9,7 +9,7 @@ const bloodDonationSchema = new mongoose.Schema({
   requester: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: function() { return this.type === 'Request'; }
+    default: null
   },
   donor: {
     type: mongoose.Schema.Types.ObjectId,

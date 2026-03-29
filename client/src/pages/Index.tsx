@@ -1,14 +1,53 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Droplets, Search, Heart, MessageCircle, Eye, ArrowRight, Handshake, Stethoscope, Activity, Brain, Bone, Baby, Microscope, Pill, TestTube } from "lucide-react";
-import { diseases } from "@/data/mockData";
+import { Droplets, Search, Heart, MessageCircle, Eye, ArrowRight, Handshake, Stethoscope, Activity, Brain, Bone, Baby, Microscope, Pill, TestTube, Loader2 } from "lucide-react";
+import { doctorsAPI, partnersAPI } from "@/lib/api";
 
 const diseaseIcons = [Stethoscope, Activity, Brain, Bone, Baby, Microscope, Pill, TestTube];
 
-const partners = ["PharmEvo", "Getz Pharma", "Martin Dow", "Searle Pakistan", "Hilton Pharma", "AGP Limited"];
+const defaultPartners = ["PharmEvo", "Getz Pharma", "Martin Dow", "Searle Pakistan", "Hilton Pharma", "AGP Limited"];
+
+const defaultCategories = [
+  { id: "cardiology", category: "Cardiology" },
+  { id: "dermatology", category: "Dermatology" },
+  { id: "neurology", category: "Neurology" },
+  { id: "orthopedics", category: "Orthopedics" },
+  { id: "gastroenterology", category: "Gastroenterology" },
+  { id: "pediatrics", category: "Pediatrics" },
+  { id: "gynecology", category: "Gynecology" },
+  { id: "ent", category: "ENT" }
+];
 
 const Index = () => {
+  const [featuredDoctors, setFeaturedDoctors] = useState<number>(0);
+  const [partners, setPartners] = useState<string[]>(defaultPartners);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [doctorsRes, partnersRes] = await Promise.all([
+          doctorsAPI.getAll({ limit: 1 }),
+          partnersAPI.getFeatured()
+        ]);
+        
+        if (doctorsRes.data.success) {
+          setFeaturedDoctors(doctorsRes.data.total || 0);
+        }
+        if (partnersRes.data.success && partnersRes.data.data.length > 0) {
+          setPartners(partnersRes.data.data.map((p: { companyName: string }) => p.companyName));
+        }
+      } catch {
+        // Silent fail
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -40,7 +79,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Medical Advice Banner */}
       <section className="bg-card py-12">
         <div className="container mx-auto px-4">
           <div className="bg-muted rounded-2xl p-8 md:p-10 text-center">
@@ -69,14 +107,13 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Diseases Section */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground text-center mb-8">
             Browse by Disease
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {diseases.slice(0, 8).map((d, i) => {
+            {defaultCategories.map((d, i) => {
               const Icon = diseaseIcons[i % diseaseIcons.length];
               return (
                 <Link
@@ -103,7 +140,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Partner Section */}
       <section className="py-12 bg-muted">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-3">
@@ -117,7 +153,6 @@ const Index = () => {
             <Handshake className="w-5 h-5" /> Partner with SehatDost
           </Link>
 
-          {/* Scrolling partners */}
           <div className="mt-10 overflow-hidden">
             <div className="flex animate-slide-left" style={{ width: "200%" }}>
               {[...partners, ...partners].map((p, i) => (

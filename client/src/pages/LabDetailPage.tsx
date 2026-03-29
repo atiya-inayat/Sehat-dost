@@ -1,20 +1,107 @@
-import { useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { labs } from "@/data/mockData";
-import { TestTube, Check, ShoppingCart } from "lucide-react";
+import { labsAPI } from "@/lib/api";
+import { TestTube, Check, ShoppingCart, ArrowLeft, Loader2 } from "lucide-react";
+
+interface Lab {
+  _id: string;
+  name: string;
+  address: { street?: string; area?: string; city: string; province: string };
+  helpline: string;
+  about: string;
+  services: string[];
+  facilities: string[];
+  rating: number;
+  type: string;
+  tests: { name: string; price: number; category: string; preparation?: string }[];
+}
 
 const LabDetailPage = () => {
   const { id } = useParams();
   const location = useLocation();
-  const lab = labs.find((l) => l.id === id);
+  const navigate = useNavigate();
+  const [lab, setLab] = useState<Lab | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [showAppointment, setShowAppointment] = useState(location.state?.mode === "appointment");
   const [formData, setFormData] = useState({ name: "", mobile: "", prescription: "" });
   const [submitted, setSubmitted] = useState(false);
 
-  if (!lab) return <div className="min-h-screen flex items-center justify-center">Lab not found</div>;
+  useEffect(() => {
+    if (id) {
+      fetchLab(id);
+    }
+  }, [id]);
+
+  const fetchLab = async (labId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await labsAPI.getById(labId);
+
+      if (response.data.success) {
+        setLab(response.data.data);
+      } else {
+        setError("Lab not found");
+      }
+    } catch {
+      setError("Failed to load lab details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading lab...</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !lab) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="text-center py-16">
+            <TestTube className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">Lab Not Found</h2>
+            <p className="text-muted-foreground mb-6">{error || "The lab you're looking for doesn't exist"}</p>
+            <Link
+              to="/lab-tests"
+              className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+            >
+              Browse Labs
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const toggleTest = (name: string) => {
     setSelectedTests((prev) => prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]);
@@ -79,6 +166,13 @@ const LabDetailPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to listing
+        </button>
+
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
             <TestTube className="w-6 h-6 text-muted-foreground" />

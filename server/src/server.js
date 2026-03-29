@@ -33,9 +33,14 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    // Using 8080 to match your actual frontend port
-    origin: process.env.FRONTEND_URL || "http://localhost:8080",
+    origin: [
+      "http://localhost:8081",
+      "http://127.0.0.1:8081",
+      process.env.FRONTEND_URL
+    ].filter(Boolean),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   }),
 );
 

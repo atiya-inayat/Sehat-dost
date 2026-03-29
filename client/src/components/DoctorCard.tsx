@@ -56,16 +56,16 @@ const DoctorCard = ({ id, name, specialty, degrees, experience, fee, online }: D
         {/* Action buttons */}
         <div className="flex sm:flex-col gap-2 shrink-0">
           <Link
-            to={`/doctor/${id}/book-online`}
+            to={`/doctor/${id}`}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold hero-gradient text-primary-foreground hover:opacity-90 transition-opacity"
           >
-            <Video className="w-4 h-4" /> Video Call
+            <Eye className="w-4 h-4" /> View Profile
           </Link>
           <Link
-            to={`/doctor/${id}`}
+            to={`/doctor/${id}/book-online`}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
           >
-            <Eye className="w-4 h-4" /> View Profile
+            <Video className="w-4 h-4" /> Book Appointment
           </Link>
         </div>
       </div>

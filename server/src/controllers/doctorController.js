@@ -57,22 +57,26 @@ export const getDoctors = async (req, res, next) => {
 
 export const getDoctor = async (req, res, next) => {
   try {
-    const doctor = await Doctor.findById(req.params.id)
-      .populate('user', 'name email phone avatar')
-      .populate('hospitalId', 'name address helpline');
+    const { id } = req.params;
 
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: 'Doctor not found'
-      });
+    // Validate ObjectId format
+    if (!id || id.length !== 24 || !/^[a-fA-F0-9]+$/.test(id)) {
+      return res.status(400).json({ success: false, message: "Invalid doctor ID format" });
     }
 
-    res.status(200).json({
-      success: true,
-      data: doctor
-    });
+    const doctor = await Doctor.findById(id)
+      .populate('user', 'name avatar phone email')
+      .lean();
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found in database" });
+    }
+
+    res.status(200).json({ success: true, data: doctor });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: "Invalid doctor ID format" });
+    }
     next(error);
   }
 };

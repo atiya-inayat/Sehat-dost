@@ -1,9 +1,30 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { medicines } from "@/data/mockData";
-import { Pill } from "lucide-react";
-import { useRef } from "react";
+import { medicinesAPI } from "@/lib/api";
+import { Pill, ArrowLeft, Loader2 } from "lucide-react";
+
+interface Medicine {
+  _id: string;
+  name: string;
+  genericName: string;
+  manufacturer: string;
+  drugClass: string;
+  formula: string;
+  form: string;
+  price: number;
+  description: string;
+  uses?: string[];
+  dosage?: string;
+  warnings?: string[];
+  precautions?: string[];
+  sideEffects?: string[];
+  contraindications?: string[];
+  interactions?: string[];
+  packaging?: string;
+  requiresPrescription: boolean;
+}
 
 const sections = ["About", "Uses", "Dosage", "Warnings", "Precautions", "Side Effects", "Packaging", "Prescription Requirement", "Expert Advice", "Disclaimer"];
 
@@ -22,19 +43,96 @@ const sectionContent: Record<string, (name: string) => string> = {
 
 const MedicineDetailPage = () => {
   const { id } = useParams();
-  const medicine = medicines.find((m) => m.id === id);
+  const navigate = useNavigate();
+  const [medicine, setMedicine] = useState<Medicine | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  if (!medicine) return <div className="min-h-screen flex items-center justify-center">Medicine not found</div>;
+  useEffect(() => {
+    if (id) {
+      fetchMedicine(id);
+    }
+  }, [id]);
 
-  const scrollTo = (section: string) => {
-    sectionRefs.current[section]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const fetchMedicine = async (medicineId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await medicinesAPI.getById(medicineId);
+
+      if (response.data.success) {
+        setMedicine(response.data.data);
+      } else {
+        setError("Medicine not found");
+      }
+    } catch {
+      setError("Failed to load medicine details");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading medicine...</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !medicine) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <div className="text-center py-16">
+            <Pill className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">Medicine Not Found</h2>
+            <p className="text-muted-foreground mb-6">{error || "The medicine you're looking for doesn't exist"}</p>
+            <Link
+              to="/medicines"
+              className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+            >
+              Browse Medicines
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to listing
+        </button>
+
         {/* Nav tabs */}
         <div className="flex flex-wrap gap-2 mb-8 sticky top-16 bg-background py-3 z-10">
           {sections.map((s) => (

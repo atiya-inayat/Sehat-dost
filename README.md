@@ -63,5 +63,3 @@ sehet-dost/
 
         👨‍💻 Developed By
         Atiya Inayat - Lead Developer
-
-
