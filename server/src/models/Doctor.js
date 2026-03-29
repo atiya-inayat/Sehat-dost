@@ -4,14 +4,13 @@ const doctorSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null
   },
   pmcId: {
     type: String,
     required: [true, 'Please provide PMC registration number'],
     unique: true,
-    uppercase: true,
-    match: [/^PMC-[0-9]{5}$/, 'Please provide a valid PMC ID (format: PMC-XXXXX)']
+    uppercase: true
   },
   specialty: {
     type: String,

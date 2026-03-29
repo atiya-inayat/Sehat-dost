@@ -148,31 +148,33 @@ const DoctorProfilePage = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
-            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-              <User className="w-10 h-10 text-destructive" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Doctor Not Found</h2>
-            <p className="text-muted-foreground mb-6">{error || "The doctor you're looking for doesn't exist"}</p>
-            <div className="flex gap-3 justify-center">
-              <Link
-                to="/doctors"
-                className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
-              >
-                Find Doctors
-              </Link>
-              <button
-                onClick={() => navigate(-1)}
-                className="px-6 py-3 rounded-xl border border-border"
-              >
-                Go Back
-              </button>
-            </div>
-          </motion.div>
+          <div className="max-w-lg mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-card rounded-2xl p-8 text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+                <User className="w-10 h-10 text-destructive" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Doctor Not Found</h2>
+              <p className="text-muted-foreground mb-6">{error || "The doctor you're looking for doesn't exist in our database."}</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  to="/doctors"
+                  className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+                >
+                  Find Doctors
+                </Link>
+                <Link
+                  to="/"
+                  className="px-6 py-3 rounded-xl border border-border text-foreground hover:bg-muted"
+                >
+                  Back to Home
+                </Link>
+              </div>
+            </motion.div>
+          </div>
         </div>
         <Footer />
       </div>

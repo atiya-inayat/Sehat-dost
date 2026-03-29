@@ -37,7 +37,14 @@ export const getHospitals = async (req, res, next) => {
 
 export const getHospital = async (req, res, next) => {
   try {
-    const hospital = await Hospital.findById(req.params.id)
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!id || id.length !== 24 || !/^[a-fA-F0-9]+$/.test(id)) {
+      return res.status(400).json({ success: false, message: "Invalid hospital ID format" });
+    }
+
+    const hospital = await Hospital.findById(id)
       .populate('doctors')
       .populate('departments.head', 'user specialty');
 
@@ -53,6 +60,9 @@ export const getHospital = async (req, res, next) => {
       data: hospital
     });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: "Invalid hospital ID format" });
+    }
     next(error);
   }
 };

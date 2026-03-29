@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { doctorsAPI } from "@/lib/api";
 import { mockDoctors } from "@/data/mockFallback";
 import { User, Shield, GraduationCap, ArrowLeft, Calendar, Clock, Loader2 } from "lucide-react";
@@ -91,18 +93,32 @@ const BookOnlinePage = () => {
 
   if (error || !doctor) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">Doctor Not Found</h2>
-          <p className="text-muted-foreground mb-6">{error || "The doctor you're looking for doesn't exist"}</p>
-          <Link
-            to="/doctors"
-            className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
-          >
-            Find Doctors
-          </Link>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="max-w-lg mx-auto text-center p-8">
+            <div className="glass-card rounded-2xl p-8">
+              <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Doctor Not Found</h2>
+              <p className="text-muted-foreground mb-6">{error || "The doctor you're looking for doesn't exist in our database."}</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  to="/doctors"
+                  className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+                >
+                  Find Doctors
+                </Link>
+                <Link
+                  to="/"
+                  className="px-6 py-3 rounded-xl border border-border text-foreground hover:bg-muted"
+                >
+                  Back to Home
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -115,6 +131,7 @@ const BookOnlinePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-6 max-w-3xl">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="w-4 h-4" /> Back
@@ -180,6 +197,7 @@ const BookOnlinePage = () => {
           Continue
         </button>
       </div>
+      <Footer />
     </div>
   );
 };

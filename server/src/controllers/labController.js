@@ -30,7 +30,14 @@ export const getLabs = async (req, res, next) => {
 
 export const getLab = async (req, res, next) => {
   try {
-    const lab = await Lab.findById(req.params.id);
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!id || id.length !== 24 || !/^[a-fA-F0-9]+$/.test(id)) {
+      return res.status(400).json({ success: false, message: "Invalid lab ID format" });
+    }
+
+    const lab = await Lab.findById(id);
 
     if (!lab) {
       return res.status(404).json({
@@ -44,6 +51,9 @@ export const getLab = async (req, res, next) => {
       data: lab
     });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: "Invalid lab ID format" });
+    }
     next(error);
   }
 };

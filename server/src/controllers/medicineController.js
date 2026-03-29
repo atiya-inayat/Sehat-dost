@@ -49,7 +49,14 @@ export const getMedicines = async (req, res, next) => {
 
 export const getMedicine = async (req, res, next) => {
   try {
-    const medicine = await Medicine.findById(req.params.id);
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!id || id.length !== 24 || !/^[a-fA-F0-9]+$/.test(id)) {
+      return res.status(400).json({ success: false, message: "Invalid medicine ID format" });
+    }
+
+    const medicine = await Medicine.findById(id);
 
     if (!medicine) {
       return res.status(404).json({
@@ -63,6 +70,9 @@ export const getMedicine = async (req, res, next) => {
       data: medicine
     });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ success: false, message: "Invalid medicine ID format" });
+    }
     next(error);
   }
 };

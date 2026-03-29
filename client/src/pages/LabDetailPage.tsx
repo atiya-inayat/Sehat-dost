@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { labsAPI } from "@/lib/api";
+import { mockLabs } from "@/data/mockFallback";
 import { TestTube, Check, ShoppingCart, ArrowLeft, Loader2 } from "lucide-react";
 
 interface Lab {
@@ -40,15 +41,34 @@ const LabDetailPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await labsAPI.getById(labId);
 
-      if (response.data.success) {
-        setLab(response.data.data);
+      // Check if ID is a valid MongoDB ObjectId (24 hex chars)
+      const isValidObjectId = /^[a-fA-F0-9]{24}$/.test(labId);
+
+      if (isValidObjectId) {
+        const response = await labsAPI.getById(labId);
+
+        if (response.data.success) {
+          setLab(response.data.data);
+          return;
+        }
+      }
+
+      // Fallback to mock data for invalid IDs
+      const mockLab = mockLabs.find(l => l._id === labId);
+      if (mockLab) {
+        setLab(mockLab);
       } else {
         setError("Lab not found");
       }
     } catch {
-      setError("Failed to load lab details");
+      // Fallback to mock data on any error
+      const mockLab = mockLabs.find(l => l._id === labId);
+      if (mockLab) {
+        setLab(mockLab);
+      } else {
+        setError("Failed to load lab details");
+      }
     } finally {
       setLoading(false);
     }
@@ -80,22 +100,32 @@ const LabDetailPage = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-          <div className="text-center py-16">
-            <TestTube className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Lab Not Found</h2>
-            <p className="text-muted-foreground mb-6">{error || "The lab you're looking for doesn't exist"}</p>
-            <Link
-              to="/lab-tests"
-              className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+          <div className="max-w-lg mx-auto">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
             >
-              Browse Labs
-            </Link>
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <div className="glass-card rounded-2xl p-8 text-center">
+              <TestTube className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Lab Not Found</h2>
+              <p className="text-muted-foreground mb-6">{error || "The lab you're looking for doesn't exist in our database."}</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  to="/lab-tests"
+                  className="px-6 py-3 rounded-xl hero-gradient text-primary-foreground"
+                >
+                  Browse Labs
+                </Link>
+                <Link
+                  to="/"
+                  className="px-6 py-3 rounded-xl border border-border text-foreground hover:bg-muted"
+                >
+                  Back to Home
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
         <Footer />

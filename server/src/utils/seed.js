@@ -532,7 +532,7 @@ const seedDoctors = async (users) => {
     },
     {
       user: doctorUsers[11]?._id,
-      pmcId: "PMC-12345-new",
+      pmcId: "PMC-12349",
       specialty: "Gastroenterologist",
       degrees: "MBBS, FCPS (Gastroenterology), MD",
       experience: 12,
@@ -783,7 +783,7 @@ const seedDoctors = async (users) => {
     },
     {
       user: doctorUsers[21]?._id,
-      pmcId: "PMC-22345-new",
+      pmcId: "PMC-22349",
       specialty: "Dermatologist",
       degrees: "MBBS, FCPS (Dermatology), Cosmetic Certification",
       experience: 6,
