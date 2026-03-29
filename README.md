@@ -1,65 +1,70 @@
-🏥 SehatDost - Healthcare Revolution (Hackathon Version)
-SehatDost is a comprehensive MERN stack platform designed to digitize healthcare in Pakistan. Built for speed, reliability, and user-centric care, it connects patients to vital medical services in seconds.
+# SehatDost - Your Healthcare Companion
 
-🚀 Hackathon Highlights
-Quick Search: Find Doctors by specialty (Dermatologist, Cardiologist) across 12+ categories.
+SehatDost is a healthcare platform built to make finding doctors, hospitals, and medical services easier for people in Pakistan. Think of it as your digital health assistant - quick, reliable, and always there when you need it.
 
-Smart Booking: Real-time appointment scheduling with automated email confirmations.
+## What We Built
 
-Emergency Blood: A dedicated blood bank portal for critical O-, A+, and B+ requests.
+A full-featured healthcare platform that lets you:
+- **Find Doctors** - Search by specialty (Cardiology, Dermatology, Neurology, and more)
+- **Book Appointments** - Schedule visits with just a few clicks
+- **Emergency Blood Requests** - Post urgent blood needs or register as a donor
+- **Browse Medicines** - Check prices and prescription requirements
+- **Find Labs & Hospitals** - Locate trusted medical facilities near you
 
-Digital Pharmacy: Browse 8+ essential medicines with pricing and prescription requirements.
+## The Tech Behind It
 
-Hospital & Lab Finder: Verified directory for major institutions like Chughtai Lab and Doctors Hospital.
+- **Frontend**: React + Vite (running on port 8080)
+- **Backend**: Node.js + Express (running on port 5000/5001)
+- **Database**: MongoDB
+- **Auth**: JWT tokens
+- **Extras**: Email notifications, file uploads
 
-🛠️ Tech Stack
-Layer,Technology
-Frontend,React.js + Vite (Port 8080)
-Backend,Node.js + Express.js (Port 5000/5001)
-Database,MongoDB (Local/Atlas)
-Authentication,JWT + Cookie-parser
-Utilities,"Nodemailer (Emails), Multer (Image Uploads)"
+## Getting Started
 
-⚙️ Quick Start Guide
+### Backend Setup
 
-1. Project Initialization
+```bash
+cd server
+npm install
+```
 
-# Clone and enter the root directory
+Create a `.env` file with your MongoDB connection string and SMTP settings.
 
-cd sehat-dost
-
-2. Backend Setup
-   cd server
-   npm install
-
-# Create a .env file and add your MONGODB_URI and SMTP_PASS
-
-# Populate the database with hackathon data:
-
+Seed some demo data:
+```bash
 npm run seed
+```
 
-# Start the engine:
-
+Start the backend:
+```bash
 npm run dev
+```
 
-3. Frontend Setup
-   cd ../client
-   npm install
-   npm run dev
+### Frontend Setup
 
-Access the app at: http://localhost:8080
+```bash
+cd client
+npm install
+npm run dev
+```
 
-📂 Architecture
-sehet-dost/
-├── client/ # React Frontend (Vite)
-└── server/ # Express Backend
-├── uploads/ # Local Storage (Prescriptions)
-└── src/
-├── config/ # Database logic
-├── middleware/ # Auth & File Gatekeepers
-├── models/ # Mongoose Schemas (User, Doctor, etc.)
-├── routes/ # API Endpoints
-└── utils/ # Seed & Email Helpers
+Open your browser to http://localhost:8080
 
-        👨‍💻 Developed By
-        Atiya Inayat - Lead Developer
+## Project Structure
+
+```
+sehat-dost/
+├── client/       # React frontend
+└── server/      # Express backend
+    ├── src/
+    │   ├── config/       # Database setup
+    │   ├── middleware/  # Auth & file handling
+    │   ├── models/       # Database schemas
+    │   ├── routes/       # API endpoints
+    │   └── utils/        # Seed scripts & helpers
+    └── uploads/          # File storage
+```
+
+## Built By
+
+Atiya Inayat
