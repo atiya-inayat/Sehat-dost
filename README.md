@@ -67,4 +67,4 @@ sehat-dost/
 
 ## Built By
 
-Atiya Inayat
+Atiya Inayat and Muhammad Sudais
