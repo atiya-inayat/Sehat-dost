@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SehatDost · Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --primary:#7CA38A;--primary-dark:#4A6152;--primary-light:#9DB8A7;
+  --primary-50:#eef4f0;--primary-100:#dde9e1;
+  --bg:#f7f9f8;--surface:#ffffff;--text:#1f2a24;--text-soft:#5a6b62;--text-mute:#8a988f;
+  --border:#e5ebe7;--border-soft:#eef2f0;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;
+  --shadow-sm:0 1px 2px rgba(74,97,82,.05);
+  --shadow:0 4px 14px rgba(74,97,82,.06);
+  --shadow-lg:0 12px 32px rgba(74,97,82,.1);
+  --radius:12px;--radius-lg:18px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-display:'Plus Jakarta Sans',var(--font);
+  --sidebar-w:260px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;color:var(--text)}
+svg{display:block}
+
+/* Layout */
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{padding:24px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft)}
+.sb-brand .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px rgba(124,163,138,.35)}
+.sb-brand h1{font-size:1.2rem;font-family:var(--font-display);color:var(--primary-dark)}
+.sb-brand span{font-size:.72rem;color:var(--text-mute);display:block;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+
+.sb-section{padding:18px 14px 6px;font-size:.7rem;color:var(--text-mute);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.sb-nav{list-style:none;padding:0 12px;flex:1}
+.sb-nav li{margin-bottom:2px}
+.sb-nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;font-weight:500;color:var(--text-soft);font-size:.92rem;transition:all .2s;position:relative}
+.sb-nav a:hover{background:var(--primary-50);color:var(--primary-dark)}
+.sb-nav a.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(124,163,138,.3)}
+.sb-nav a.active svg{color:#fff}
+.sb-nav svg{width:18px;height:18px;flex-shrink:0;color:var(--text-mute)}
+.sb-nav a:hover svg{color:var(--primary-dark)}
+.sb-nav .badge{margin-left:auto;background:var(--primary-100);color:var(--primary-dark);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.sb-nav a.active .badge{background:rgba(255,255,255,.25);color:#fff}
+
+.sb-card{margin:18px 14px;padding:18px;background:linear-gradient(135deg,var(--primary-dark),var(--primary));border-radius:var(--radius);color:#fff;position:relative;overflow:hidden}
+.sb-card::before{content:'';position:absolute;bottom:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.08);border-radius:50%}
+.sb-card h4{color:#fff;font-size:.95rem;margin-bottom:6px;position:relative}
+.sb-card p{font-size:.78rem;opacity:.85;margin-bottom:12px;position:relative}
+.sb-card button{background:#fff;color:var(--primary-dark);font-weight:600;padding:7px 14px;border-radius:8px;font-size:.78rem;position:relative}
+
+/* Main */
+.main{min-width:0}
+
+/* Topbar */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:10;backdrop-filter:blur(8px);background:rgba(255,255,255,.9)}
+.page-title h2{font-size:1.35rem}
+.page-title p{font-size:.82rem;color:var(--text-mute)}
+
+.search{margin-left:auto;position:relative;max-width:360px;flex:1}
+.search input{width:100%;padding:10px 14px 10px 40px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:.88rem;color:var(--text);transition:.2s}
+.search input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(124,163,138,.1)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-mute)}
+
+.top-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:40px;height:40px;border-radius:10px;background:var(--bg);display:grid;place-items:center;color:var(--text-soft);transition:.2s;position:relative;border:1px solid var(--border)}
+.icon-btn:hover{background:var(--primary-50);color:var(--primary-dark);border-color:var(--primary-light)}
+.icon-btn svg{width:18px;height:18px}
+.dot{position:absolute;top:9px;right:9px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--surface)}
+.profile{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;background:var(--bg);border-radius:40px;border:1px solid var(--border);cursor:pointer;transition:.2s}
+.profile:hover{background:var(--primary-50)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:grid;place-items:center;color:#fff;font-weight:700;font-size:.82rem}
+.profile .info strong{display:block;font-size:.82rem;font-weight:600}
+.profile .info span{font-size:.7rem;color:var(--text-mute)}
+
+/* Content */
+.content{padding:28px 32px 40px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;transition:.3s;position:relative;overflow:hidden}
+.stat:hover{border-color:var(--primary-light);box-shadow:var(--shadow)}
+.stat-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center}
+.stat-icon.green{background:var(--primary-50);color:var(--primary-dark)}
+.stat-icon.blue{background:#eff6ff;color:var(--info)}
+.stat-icon.red{background:#fef2f2;color:var(--danger)}
+.stat-icon.amber{background:#fffbeb;color:var(--warning)}
+.stat-icon svg{width:20px;height:20px}
+.stat .trend{font-size:.72rem;font-weight:600;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:3px}
+.trend.up{background:#ecfdf5;color:var(--success)}
+.trend.down{background:#fef2f2;color:var(--danger)}
+.stat-label{font-size:.82rem;color:var(--text-mute);font-weight:500;margin-bottom:4px}
+.stat-value{font-size:1.85rem;font-weight:800;font-family:var(--font-display);color:var(--text);letter-spacing:-.02em}
+.stat-sub{font-size:.75rem;color:var(--text-mute);margin-top:6px}
+
+/* Grid rows */
+.grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:22px;margin-bottom:22px}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:22px;margin-bottom:22px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card-head h3{font-size:1.02rem}
+.card-head .sub{font-size:.78rem;color:var(--text-mute);margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--primary-50);color:var(--primary-dark);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:.2s;border:1px solid transparent}
+.chip:hover{background:var(--primary-100)}
+.chip.active{background:var(--primary);color:#fff}
+.chip-group{display:flex;gap:6px}
+
+/* Chart */
+.chart-wrap{height:280px;position:relative}
+.chart-wrap.sm{height:220px}
+
+/* Blood requests */
+.blood-list{display:flex;flex-direction:column;gap:12px;max-height:280px;overflow-y:auto;padding-right:4px}
+.blood-list::-webkit-scrollbar{width:5px}
+.blood-list::-webkit-scrollbar-track{background:transparent}
+.blood-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.blood-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border-soft);transition:.2s}
+.blood-item:hover{border-color:var(--primary-light);background:#fff}
+.blood-type{width:42px;height:42px;border-radius:10px;background:#fef2f2;color:var(--danger);display:grid;place-items:center;font-weight:800;font-family:var(--font-display);font-size:.88rem;flex-shrink:0}
+.blood-info{flex:1;min-width:0}
+.blood-info strong{display:block;font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blood-info span{font-size:.74rem;color:var(--text-mute)}
+.urgency{font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px}
+.urgency.critical{background:#fef2f2;color:var(--danger)}
+.urgency.immediate{background:#fffbeb;color:var(--warning)}
+.urgency.normal{background:#eff6ff;color:var(--info)}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 14px;font-size:.72rem;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border)}
+td{padding:14px;font-size:.86rem;border-bottom:1px solid var(--border-soft)}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:.2s}
+tbody tr:hover{background:var(--bg)}
+.doc-cell{display:flex;align-items:center;gap:11px}
+.doc-cell .avatar{width:36px;height:36px;font-size:.76rem}
+.doc-cell strong{display:block;font-weight:600}
+.doc-cell span{font-size:.74rem;color:var(--text-mute)}
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.status::before{content:'';width:6px;height:6px;border-radius:50%}
+.status.confirmed{background:#ecfdf5;color:var(--success)}
+.status.confirmed::before{background:var(--success)}
+.status.pending{background:#fffbeb;color:var(--warning)}
+.status.pending::before{background:var(--warning)}
+.status.cancelled{background:#fef2f2;color:var(--danger)}
+.status.cancelled::before{background:var(--danger)}
+.mini-btn{padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:.75rem;font-weight:600;color:var(--text-soft);transition:.2s}
+.mini-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Doctor list compact */
+.mini-list{display:flex;flex-direction:column;gap:10px}
+.mini-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;transition:.2s}
+.mini-item:hover{background:var(--bg)}
+.mini-item .avatar{width:38px;height:38px;font-size:.8rem}
+.mini-item .info{flex:1;min-width:0}
+.mini-item strong{display:block;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-item span{font-size:.73rem;color:var(--text-mute)}
+.rating{font-size:.78rem;font-weight:700;color:var(--warning);display:flex;align-items:center;gap:3px}
+
+/* Activity */
+.activity{display:flex;flex-direction:column;gap:16px}
+.act-item{display:flex;gap:14px;position:relative;padding-bottom:16px;border-bottom:1px solid var(--border-soft)}
+.act-item:last-child{padding-bottom:0;border-bottom:none}
+.act-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.act-icon.green{background:var(--primary-50);color:var(--primary-dark)}
+.act-icon.blue{background:#eff6ff;color:var(--info)}
+.act-icon.red{background:#fef2f2;color:var(--danger)}
+.act-icon.amber{background:#fffbeb;color:var(--warning)}
+.act-icon svg{width:16px;height:16px}
+.act-body{flex:1;min-width:0}
+.act-body p{font-size:.84rem;margin-bottom:2px}
+.act-body p strong{font-weight:600}
+.act-body span{font-size:.72rem;color:var(--text-mute)}
+
+/* Responsive */
+@media(max-width:1200px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+@media(max-width:880px){
+  :root{--sidebar-w:0px}
+  .sidebar{position:fixed;left:-280px;width:260px;z-index:100;transition:.3s}
+  .sidebar.open{left:0}
+  .app{grid-template-columns:1fr}
+  .topbar{padding:14px 18px}
+  .content{padding:20px 18px 32px}
+  .page-title h2{font-size:1.15rem}
+  .page-title p{display:none}
+  .search{max-width:none}
+  .profile .info{display:none}
+  .menu-btn{display:grid !important}
+}
+.menu-btn{display:none;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text-soft)}
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr}
+  .search{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="mark">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div><h1>SehatDost</h1><span>Admin Panel</span></div>
+    </div>
+
+    <div class="sb-section">Main</div>
+    <ul class="sb-nav">
+      <li><a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Doctors<span class="badge">248</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>Hospitals</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>Lab Tests</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>Medicines</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>Diseases</a></li>
+    </ul>
+
+    <div class="sb-section">Management</div>
+    <ul class="sb-nav">
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Appointments<span class="badge">32</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s7 6 7 12a7 7 0 0 1-14 0c0-6 7-12 7-12z"/></svg>Blood Requests<span class="badge">8</span></a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Q&amp;A Board</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>Partnerships</a></li>
+    </ul>
+
+    <div class="sb-section">System</div>
+    <ul class="sb-nav">
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Analytics</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a></li>
+    </ul>
+
+    <div class="sb-card">
+      <h4>Upgrade to Pro</h4>
+      <p>Unlock advanced analytics and reports</p>
+      <button>Upgrade Now</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-title">
+        <h2>Dashboard Overview</h2>
+        <p>Welcome back, Admin · Here's what's happening today</p>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search doctors, patients, appointments...">
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" title="Messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+        <button class="icon-btn" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
+        <div class="profile">
+          <div class="avatar">AD</div>
+          <div class="info"><strong>Dr. Ahmed</strong><span>Super Admin</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-head">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <span class="trend up">↑ 12.5%</span>
+          </div>
+          <div class="stat-label">Total Doctors</div>
+          <div class="stat-value">248</div>
+          <div class="stat-sub">+18 new this month</div>
+        </div>
+        <div class="stat">
+          <div class="stat-head">
+            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <span class="trend up">↑ 8.2%</span>
+          </div>
+          <div class="stat-label">Appointments Today</div>
+          <div class="stat-value">1,432</div>
+          <div class="stat-sub">32 pending confirmations</div>
+        </div>
+        <div class="stat">
+          <div class="stat-head">
+            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s7 6 7 12a7 7 0 0 1-14 0c0-6 7-12 7-12z"/></svg></div>
+            <span class="trend down">↓ 3.1%</span>
+          </div>
+          <div class="stat-label">Blood Requests</div>
+          <div class="stat-value">86</div>
+          <div class="stat-sub">8 critical cases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-head">
+            <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <span class="trend up">↑ 24.8%</span>
+          </div>
+          <div class="stat-label">Revenue (PKR)</div>
+          <div class="stat-value">2.4M</div>
+          <div class="stat-sub">₨ 340K this week</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Appointments Overview</h3>
+              <div class="sub">Consultations trend across the last 7 months</div>
+            </div>
+            <div class="chip-group">
+              <button class="chip">Week</button>
+              <button class="chip active">Month</button>
+              <button class="chip">Year</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="apptChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>By Specialty</h3>
+              <div class="sub">Top consulted specialties</div>
+            </div>
+          </div>
+          <div class="chart-wrap sm"><canvas id="specChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Blood + Doctors row -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Recent Appointments</h3>
+              <div class="sub">Latest booked consultations</div>
+            </div>
+            <button class="chip">View all →</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="doc-cell"><div class="avatar">SA</div><div><strong>Sara Ahmed</strong><span>Hypertension</span></div></div></td>
+                  <td>Dr. Bilal Khan</td>
+                  <td>Today, 2:30 PM</td>
+                  <td><span class="status confirmed">Confirmed</span></td>
+                  <td><button class="mini-btn">View</button></td>
+                </tr>
+                <tr>
+                  <td><div class="doc-cell"><div class="avatar">MU</div><div><strong>Muhammad Usman</strong><span>Skin rash</span></div></div></td>
+                  <td>Dr. Ayesha Tariq</td>
+                  <td>Today, 3:15 PM</td>
+                  <td><span class="status pending">Pending</span></td>
+                  <td><button class="mini-btn">View</button></td>
+                </tr>
+                <tr>
+                  <td><div class="doc-cell"><div class="avatar">FN</div><div><strong>Fatima Noor</strong><span>Child checkup</span></div></div></td>
+                  <td>Dr. Hassan Raza</td>
+                  <td>Today, 4:00 PM</td>
+                  <td><span class="status confirmed">Confirmed</span></td>
+                  <td><button class="mini-btn">View</button></td>
+                </tr>
+                <tr>
+                  <td><div class="doc-cell"><div class="avatar">IK</div><div><strong>Imran Kamal</strong><span>Heart consultation</span></div></div></td>
+                  <td>Dr. Sana Malik</td>
+                  <td>Tomorrow, 10:00 AM</td>
+                  <td><span class="status cancelled">Cancelled</span></td>
+                  <td><button class="mini-btn">View</button></td>
+                </tr>
+                <tr>
+                  <td><div class="doc-cell"><div class="avatar">ZR</div><div><strong>Zainab Rashid</strong><span>Follow-up</span></div></div></td>
+                  <td>Dr. Bilal Khan</td>
+                  <td>Tomorrow, 11:30 AM</td>
+                  <td><span class="status confirmed">Confirmed</span></td>
+                  <td><button class="mini-btn">View</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Urgent Blood Requests</h3>
+              <div class="sub">Requires immediate attention</div>
+            </div>
+          </div>
+          <div class="blood-list">
+            <div class="blood-item">
+              <div class="blood-type">O-</div>
+              <div class="blood-info"><strong>Ali Hassan</strong><span>CMH Hospital · 2 units</span></div>
+              <span class="urgency critical">Critical</span>
+            </div>
+            <div class="blood-item">
+              <div class="blood-type">A+</div>
+              <div class="blood-info"><strong>Nadia Aslam</strong><span>Shifa Clinic · 3 units</span></div>
+              <span class="urgency immediate">Urgent</span>
+            </div>
+            <div class="blood-item">
+              <div class="blood-type">B+</div>
+              <div class="blood-info"><strong>Farhan Ali</strong><span>Agha Khan · 1 unit</span></div>
+              <span class="urgency critical">Critical</span>
+            </div>
+            <div class="blood-item">
+              <div class="blood-type">AB-</div>
+              <div class="blood-info"><strong>Hina Shah</strong><span>Jinnah Hospital · 2 units</span></div>
+              <span class="urgency immediate">Urgent</span>
+            </div>
+            <div class="blood-item">
+              <div class="blood-type">O+</div>
+              <div class="blood-info"><strong>Tariq Mehmood</strong><span>PIMS · 4 units</span></div>
+              <span class="urgency normal">Normal</span>
+            </div>
+            <div class="blood-item">
+              <div class="blood-type">A-</div>
+              <div class="blood-info"><strong>Mariam Khan</strong><span>Lady Reading · 2 units</span></div>
+              <span class="urgency normal">Normal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctors + Activity -->
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Top Rated Doctors</h3>
+              <div class="sub">Highest patient ratings this month</div>
+            </div>
+            <button class="chip">Manage →</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Doctor</th><th>Specialty</th><th>Patients</th><th>Rating</th><th>Revenue</th></tr></thead>
+              <tbody>
+                <tr><td><div class="doc-cell"><div class="avatar">BK</div><div><strong>Dr. Bilal Khan</strong><span>PMDC Verified</span></div></div></td><td>Cardiologist</td><td>342</td><td><span class="rating">★ 4.9</span></td><td>₨ 342K</td></tr>
+                <tr><td><div class="doc-cell"><div class="avatar">AT</div><div><strong>Dr. Ayesha Tariq</strong><span>PMDC Verified</span></div></div></td><td>Dermatologist</td><td>298</td><td><span class="rating">★ 4.8</span></td><td>₨ 289K</td></tr>
+                <tr><td><div class="doc-cell"><div class="avatar">HR</div><div><strong>Dr. Hassan Raza</strong><span>PMDC Verified</span></div></div></td><td>Pediatrician</td><td>276</td><td><span class="rating">★ 4.8</span></td><td>₨ 231K</td></tr>
+                <tr><td><div class="doc-cell"><div class="avatar">SM</div><div><strong>Dr. Sana Malik</strong><span>PMDC Verified</span></div></div></td><td>Neurologist</td><td>214</td><td><span class="rating">★ 4.7</span></td><td>₨ 198K</td></tr>
+                <tr><td><div class="doc-cell"><div class="avatar">UA</div><div><strong>Dr. Usman Ali</strong><span>PMDC Verified</span></div></div></td><td>Nephrologist</td><td>189</td><td><span class="rating">★ 4.7</span></td><td>₨ 175K</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Recent Activity</h3>
+              <div class="sub">System-wide updates</div>
+            </div>
+          </div>
+          <div class="activity">
+            <div class="act-item">
+              <div class="act-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+              <div class="act-body"><p><strong>Dr. Imran Shah</strong> verified as Cardiologist</p><span>2 minutes ago</span></div>
+            </div>
+            <div class="act-item">
+              <div class="act-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s7 6 7 12a7 7 0 0 1-14 0c0-6 7-12 7-12z"/></svg></div>
+              <div class="act-body"><p>Critical blood request <strong>O-</strong> posted</p><span>15 minutes ago</span></div>
+            </div>
+            <div class="act-item">
+              <div class="act-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div>
+              <div class="act-body"><p><strong>42</strong> new appointments booked</p><span>1 hour ago</span></div>
+            </div>
+            <div class="act-item">
+              <div class="act-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="act-body"><p><strong>3 partnerships</strong> awaiting approval</p><span>3 hours ago</span></div>
+            </div>
+            <div class="act-item">
+              <div class="act-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              <div class="act-body"><p><strong>156</strong> new users registered</p><span>5 hours ago</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// Chart defaults
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#8a988f';
+Chart.defaults.borderColor = '#eef2f0';
+
+// Appointments line chart
+const apptCtx = document.getElementById('apptChart').getContext('2d');
+const grad = apptCtx.createLinearGradient(0, 0, 0, 280);
+grad.addColorStop(0, 'rgba(124,163,138,0.28)');
+grad.addColorStop(1, 'rgba(124,163,138,0)');
+new Chart(apptCtx, {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'],
+    datasets: [
+      {label:'Consultations',data:[820,932,1101,1234,1380,1502,1432],borderColor:'#7CA38A',backgroundColor:grad,borderWidth:3,fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#7CA38A',pointBorderColor:'#fff',pointBorderWidth:2,pointHoverRadius:6},
+      {label:'Completed',data:[720,832,960,1050,1190,1320,1260],borderColor:'#4A6152',borderWidth:2,borderDash:[6,6],fill:false,tension:.4,pointRadius:0}
+    ]
+  },
+  options: {
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',align:'end',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,padding:15,font:{size:12}}}},
+    scales:{
+      y:{beginAtZero:true,grid:{color:'#eef2f0'},ticks:{font:{size:11}}},
+      x:{grid:{display:false},ticks:{font:{size:11}}}
+    }
+  }
+});
+
+// Specialty doughnut
+new Chart(document.getElementById('specChart').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels:['Cardiology','Dermatology','Pediatrics','Neurology','Other'],
+    datasets:[{data:[32,24,18,14,12],backgroundColor:['#4A6152','#7CA38A','#9DB8A7','#c3d4c9','#e5ebe7'],borderWidth:0,hoverOffset:8}]
+  },
+  options: {
+    responsive:true,maintainAspectRatio:false,cutout:'68%',
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,padding:12,font:{size:11}}}}
+  }
+});
+</script>
+</body>
+</html>
